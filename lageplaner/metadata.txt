@@ -1,0 +1,19 @@
+[general]
+name=Lageplaner
+qgisMinimumVersion=3.28
+qgisMaximumVersion=3.99
+description=Load ALKIS cadastral data for the current map extent directly into QGIS.
+version=0.2.3
+author=Lageplaner
+email=api.service@lageplaner.de
+about=ALKIS-Daten für den aktuellen Kartenausschnitt direkt in QGIS laden.\n\nLädt ALKIS-Daten für den aktuellen Kartenausschnitt direkt in QGIS, inklusive Farben, Stricharten, Symbolen und Beschriftungen. Datenstand und Lizenzen je Bundesland finden Sie unter lageplaner.de/quelldaten. Aktuell ohne Bayern und Sachsen-Anhalt.
+changelog=0.2.3 - Public GeoPackage access without API key, 1 km² limit, clearer plugin copy and publish metadata\n    0.2.2 - Public GeoPackage support and OpenAPI cleanup\n    0.2.1 - Improved ALKIS styling, labels, SVG symbols and legend naming
+tracker=
+repository=
+homepage=https://lageplaner.de
+category=Vector
+icon=icon.png
+experimental=True
+deprecated=False
+hasProcessingProvider=False
+tags=alkis,cadastre,cadastral,geopackage,parcels,buildings,land use,germany,qgis
