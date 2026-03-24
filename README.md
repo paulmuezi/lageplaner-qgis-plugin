@@ -1,10 +1,22 @@
 # Lageplaner QGIS Plugin
 
-ALKIS-Daten für den aktuellen Kartenausschnitt direkt in QGIS laden.
+Mit dem Lageplaner-Plugin lassen sich ALKIS-Katasterdaten für den aktuellen Kartenausschnitt direkt in QGIS laden.
 
-Lädt ALKIS-Daten für den aktuellen Kartenausschnitt direkt in QGIS, inklusive Farben, Stricharten, Symbolen und Beschriftungen. Datenstand und Lizenzen je Bundesland finden Sie unter [lageplaner.de/quelldaten](https://lageplaner.de/quelldaten). Aktuell ohne Bayern und Sachsen-Anhalt.
+Der sichtbare Ausschnitt wird als GeoPackage aus der Lageplaner API geladen und anschließend mit Farben, Linienarten, Symbolen und Beschriftungen in QGIS dargestellt.
 
-English summary: Load ALKIS cadastral data for the current map extent directly into QGIS.
+Der öffentliche GeoPackage-Zugang ist auf 1 km² pro Export begrenzt. Zusätzlich gelten 30 Anfragen pro Stunde pro IP-Adresse und maximal 2 gleichzeitige Jobs pro IP-Adresse.
+
+Datenstand und Lizenzhinweise je Bundesland:
+[lageplaner.de/quelldaten](https://lageplaner.de/quelldaten)
+
+API-Dokumentation:
+[api.lageplaner.de/v1/docs](https://api.lageplaner.de/v1/docs)
+
+Derzeit noch nicht verfügbar:
+- Bayern
+- Sachsen-Anhalt
+
+English summary: Load ALKIS cadastral data for the current map extent into QGIS.
 
 ## Lizenz
 
@@ -12,54 +24,49 @@ Das Plugin wird mit einer GPL-2.0-Lizenzdatei ausgeliefert:
 
 - [LICENSE](./LICENSE)
 
-Der praktische Grund dafuer ist die mitgelieferte SVG-Symbolbibliothek aus dem norBIT-ALKIS-Plugin. Solange diese Symbole Teil des Plugin-Pakets sind, ist GPL-2.0 fuer den Release-Stand die sicherste Wahl.
+Der praktische Grund dafür ist die mitgelieferte SVG-Symbolbibliothek aus dem norBIT-ALKIS-Plugin. Solange diese Symbole Teil des Plugin-Pakets sind, ist GPL-2.0 für den Release-Stand die sicherste Wahl.
 
-## Enthalten
+## Was das Plugin macht
 
-- Plugin-Name: `Lageplaner`
-- Lageplaner-Branding mit bestehendem Logo
-- Uebernahme des aktuellen QGIS-Kartenausschnitts
-- `POST /v1/geopackage`
-- Polling auf `GET /v1/geopackage/{task_id}`
-- Download des erzeugten `.gpkg`
-- immer vollstaendiger Export mit Flaechen, Linien, Punkten und Beschriftungen
-- automatisches Laden aller enthaltenen Layer in eine QGIS-Gruppe `Lageplaner`
-- automatische Symbolik fuer Flaechen, Linien, Punkte und Beschriftungen
-- SVG-Unterstuetzung ueber `lageplaner/svg/` und das Attribut `svg_filename`
-- harter API-Endpunkt auf `https://api.lageplaner.de/v1`
-- kein API-Key erforderlich
-- klare Layernamen nach Signaturnummer und Bezeichnung
+- übernimmt den aktuellen Kartenausschnitt aus QGIS
+- lädt ALKIS-Daten als GeoPackage aus der Lageplaner API
+- legt Flächen, Linien, Punkte und Beschriftungen direkt im Projekt an
+- nutzt passende Farben, Linienstile, SVG-Symbole und Beschriftungen
+- benennt Layer nachvollziehbar nach Signaturnummer und Bezeichnung
+- funktioniert ohne eigenen API-Key
 
 ## Installieren in QGIS
 
 1. Den Ordner `lageplaner` zippen.
 2. In QGIS: `Plugins` -> `Plugins verwalten und installieren...`
-3. `Aus ZIP installieren` waehlen.
-4. Das erzeugte ZIP auswaehlen.
+3. `Aus ZIP installieren` wählen.
+4. Das erzeugte ZIP auswählen.
 
 Wichtig: Die ZIP muss direkt den Plugin-Ordner `lageplaner` enthalten.
 
-## Grenzen und Fehler
+## Hinweise
 
-- Maximale Exportflaeche: `1 km²`
-- Unterstuetzte Standorte: nur Deutschland mit verfuegbarem ALKIS-Datensatz
-- Aktuell ohne Bayern und Sachsen-Anhalt
+- Maximale Exportfläche: `1 km²`
+- Maximale Anzahl öffentlicher Anfragen: `30 pro Stunde pro IP-Adresse`
+- Maximale Anzahl gleichzeitiger öffentlicher Jobs: `2 pro IP-Adresse`
+- Unterstützte Standorte: nur Deutschland mit verfügbarem ALKIS-Datensatz
 - Datenstand und Lizenzen je Bundesland:
   - [lageplaner.de/quelldaten](https://lageplaner.de/quelldaten)
+- API-Dokumentation:
+  - [api.lageplaner.de/v1/docs](https://api.lageplaner.de/v1/docs)
 
-Typische Fehlercodes:
+Typische Rückmeldungen:
 
 - `NO_DATA`
-  - kein unterstuetzter Datensatz fuer den Standort
-  - oder Standort ausserhalb Deutschlands
+  - für den gewählten Standort steht derzeit kein unterstützter Datensatz bereit
 - `STATE_PROBE_FAILED`
-  - technischer Fehler bei der Datensatzpruefung
+  - technischer Fehler bei der Datensatzprüfung
 
 ## Symbolik
 
 Das Plugin bringt eine automatische QGIS-Symbolik mit:
 
-- Flaechen, Linien und Punkte werden anhand von Darstellungsattributen, Signaturnummern und SVG-Symbolen dargestellt.
+- Flächen, Linien und Punkte werden anhand von Darstellungsattributen, Signaturnummern und SVG-Symbolen dargestellt.
 - Beschriftungen werden direkt aus dem Label-Layer aktiviert.
 - Wenn im Layer das Feld `svg_filename` vorhanden ist und im Plugin unter `lageplaner/svg/` eine gleichnamige SVG-Datei liegt, nutzt das Plugin automatisch diese SVG statt des generischen Punktsymbols.
 
@@ -70,30 +77,22 @@ Damit ist der saubere Zielzustand:
 
 ## Herkunft der SVG-Symbole
 
-Das Plugin enthaelt derzeit die SVG-Symbolbibliothek aus dem norBIT-Repository:
+Das Plugin enthält derzeit die SVG-Symbolbibliothek aus dem norBIT-Repository:
 
 - https://github.com/norBIT/alkisplugin
 
 Die Symbole liegen im Plugin unter `lageplaner/svg/`.
 Ein Lizenzhinweis liegt in [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
 
-## Oeffentlicher Plugin-Zugang
+## Öffentlicher Plugin-Zugang
 
-Das Plugin nutzt den oeffentlichen GeoPackage-Zugang der Lageplaner API.
+Das Plugin nutzt den öffentlichen GeoPackage-Zugang der Lageplaner API.
 
 - kein API-Key erforderlich
 - begrenzt auf `1 km²` pro Export
-- nur fuer GeoPackage-Exporte
-- fuer Deutschland mit verfuegbaren ALKIS-Datensaetzen
-
-## Veroeffentlichung
-
-Vor einer Veroeffentlichung auf `plugins.qgis.org` sollten mindestens diese Punkte gesetzt sein:
-
-- `metadata.txt` mit finaler Version, Repository, Tracker und `experimental=False`
-- sauberes ZIP ohne `__pycache__`, `.pyc` und `.DS_Store`
-- kurzer Screenshot-Satz fuer die Plugin-Seite
-- klare Lizenz- und Drittanbieterhinweise fuer SVGs
-- kurzer Testlauf auf mindestens QGIS 3.28 und einer aktuellen 3.x-Version
-
-Eine konkrete Checkliste steht in [PUBLISHING.md](./PUBLISHING.md).
+- begrenzt auf `30` Anfragen pro Stunde pro IP-Adresse
+- begrenzt auf `2` gleichzeitige Jobs pro IP-Adresse
+- nur für GeoPackage-Exporte
+- für Deutschland mit verfügbaren ALKIS-Datensätzen
+- API-Dokumentation:
+  - [api.lageplaner.de/v1/docs](https://api.lageplaner.de/v1/docs)
