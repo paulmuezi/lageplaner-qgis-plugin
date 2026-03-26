@@ -735,14 +735,14 @@ class LageplanerDialog(QDialog):
         font.setPointSizeF(2.5)
         text_format.setFont(font)
         text_format.setSize(1.2)
-        text_format.setSizeUnit(QgsUnitTypes.RenderMapUnits)
+        text_format.setSizeUnit(QgsUnitTypes.RenderMetersInMapUnits)
         text_format.setColor(QColor("#111111"))
 
         buffer_settings = QgsTextBufferSettings()
         buffer_settings.setEnabled(True)
         buffer_settings.setColor(QColor("#ffffff"))
         buffer_settings.setSize(0.2)
-        buffer_settings.setSizeUnit(QgsUnitTypes.RenderMapUnits)
+        buffer_settings.setSizeUnit(QgsUnitTypes.RenderMetersInMapUnits)
         text_format.setBuffer(buffer_settings)
         pal.setFormat(text_format)
 
@@ -752,10 +752,36 @@ class LageplanerDialog(QDialog):
                 QgsPalLayerSettings.Size,
                 QgsProperty.fromExpression(
                     "case "
+                    "when ("
+                    "case "
                     "when coalesce(\"raw_grad_pt\", 0) < 0 then abs(\"raw_grad_pt\") "
                     "else 0.25 * coalesce(\"raw_skalierung\", 1) * coalesce(\"raw_grad_pt\", 0) "
                     "end"
+                    ") <= 0 then 1.0 "
+                    "when coalesce(\"thema\", '') = 'Gebäude' "
+                    "and regexp_match(coalesce(to_string(\"text_content\"), ''), '^[0-9]+$') "
+                    "and ("
+                    "case "
+                    "when coalesce(\"raw_grad_pt\", 0) < 0 then abs(\"raw_grad_pt\") "
+                    "else 0.25 * coalesce(\"raw_skalierung\", 1) * coalesce(\"raw_grad_pt\", 0) "
+                    "end"
+                    ") < 1.0 then 1.5 "
+                    "else ("
+                    "case "
+                    "when coalesce(\"raw_grad_pt\", 0) < 0 then abs(\"raw_grad_pt\") "
+                    "else 0.25 * coalesce(\"raw_skalierung\", 1) * coalesce(\"raw_grad_pt\", 0) "
+                    "end"
+                    ") "
+                    "end"
                 ),
+            )
+            data_defined.setProperty(
+                QgsPalLayerSettings.FontSizeUnit,
+                QgsProperty.fromValue(int(QgsUnitTypes.RenderMetersInMapUnits)),
+            )
+            data_defined.setProperty(
+                QgsPalLayerSettings.BufferUnit,
+                QgsProperty.fromValue(int(QgsUnitTypes.RenderMetersInMapUnits)),
             )
         if "font_family" in fields:
             data_defined.setProperty(
