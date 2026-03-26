@@ -9,7 +9,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import ast
-from typing import Any, Callable
+from typing import Any
 
 from qgis.PyQt.QtCore import QPointF, Qt, QTimer, QSettings
 from qgis.PyQt.QtGui import QColor, QFont, QIcon
@@ -24,7 +24,6 @@ from qgis.PyQt.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QMessageBox,
     QPushButton,
     QDoubleSpinBox,
     QVBoxLayout,
@@ -49,7 +48,6 @@ from qgis.core import (
     QgsRuleBasedRenderer,
     QgsSingleSymbolRenderer,
     QgsSvgMarkerSymbolLayer,
-    QgsTask,
     QgsTextBufferSettings,
     QgsTextFormat,
     QgsUnitTypes,
@@ -113,105 +111,6 @@ def _validate_allowed_url(url: str, *, allow_download_host: bool = False) -> str
         raise ValueError("Die URL verweist auf einen nicht unterstützten Host.")
 
     return url
-
-
-class HttpJsonTask(QgsTask):
-    def __init__(
-        self,
-        *,
-        description: str,
-        method: str,
-        url: str,
-        headers: dict[str, str],
-        payload: dict[str, Any] | None = None,
-        on_success: Callable[[dict[str, Any]], None] | None = None,
-        on_error: Callable[[str], None] | None = None,
-    ) -> None:
-        super().__init__(description, QgsTask.CanCancel)
-        self._method = method
-        self._url = url
-        self._headers = headers
-        self._payload = payload
-        self._on_success = on_success
-        self._on_error = on_error
-        self.result_data: dict[str, Any] | None = None
-        self.error_message: str | None = None
-
-    def run(self) -> bool:
-        try:
-            safe_url = _validate_allowed_url(self._url)
-            data = None if self._payload is None else json.dumps(self._payload).encode("utf-8")
-            request = urllib.request.Request(
-                safe_url,
-                data=data,
-                headers=self._headers,
-                method=self._method,
-            )
-            with urllib.request.urlopen(request, timeout=60) as response:
-                body = response.read().decode("utf-8")
-            self.result_data = json.loads(body) if body else {}
-            return True
-        except urllib.error.HTTPError as exc:
-            try:
-                payload = exc.read().decode("utf-8")
-            except Exception:
-                payload = ""
-            self.error_message = f"HTTP {exc.code}: {payload or exc.reason}"
-            return False
-        except Exception as exc:
-            self.error_message = str(exc)
-            return False
-
-    def finished(self, result: bool) -> None:
-        if result and self.result_data is not None:
-            if self._on_success:
-                self._on_success(self.result_data)
-            return
-
-        if self._on_error:
-            self._on_error(self.error_message or "Unbekannter API-Fehler")
-
-
-class HttpDownloadTask(QgsTask):
-    def __init__(
-        self,
-        *,
-        description: str,
-        url: str,
-        output_path: str,
-        on_success: Callable[[str], None] | None = None,
-        on_error: Callable[[str], None] | None = None,
-    ) -> None:
-        super().__init__(description, QgsTask.CanCancel)
-        self._url = url
-        self._output_path = output_path
-        self._on_success = on_success
-        self._on_error = on_error
-        self.error_message: str | None = None
-
-    def run(self) -> bool:
-        try:
-            safe_url = _validate_allowed_url(self._url, allow_download_host=True)
-            with urllib.request.urlopen(safe_url, timeout=120) as response:
-                payload = response.read()
-            with open(self._output_path, "wb") as handle:
-                handle.write(payload)
-            return True
-        except urllib.error.HTTPError as exc:
-            self.error_message = f"HTTP {exc.code}: {exc.reason}"
-            return False
-        except Exception as exc:
-            self.error_message = str(exc)
-            return False
-
-    def finished(self, result: bool) -> None:
-        if result:
-            if self._on_success:
-                self._on_success(self._output_path)
-            return
-
-        if self._on_error:
-            self._on_error(self.error_message or "Download fehlgeschlagen")
 
 
 class LageplanerDialog(QDialog):
@@ -413,13 +312,13 @@ class LageplanerDialog(QDialog):
             headers=self._api_headers(include_json=payload is not None),
             method=method,
         )
-        with urllib.request.urlopen(request, timeout=60) as response:
+        with urllib.request.urlopen(request, timeout=60) as response:  # nosec B310
             body = response.read().decode("utf-8")
         return json.loads(body) if body else {}
 
     def _download_file(self, *, url: str, output_path: str) -> None:
         safe_url = _validate_allowed_url(url, allow_download_host=True)
-        with urllib.request.urlopen(safe_url, timeout=180) as response:
+        with urllib.request.urlopen(safe_url, timeout=180) as response:  # nosec B310
             payload = response.read()
         with open(output_path, "wb") as handle:
             handle.write(payload)

@@ -1,8 +1,8 @@
 # Lageplaner QGIS Plugin
 
-Mit dem Lageplaner-Plugin lassen sich ALKIS-Katasterdaten für den aktuellen Kartenausschnitt direkt in QGIS laden.
+Mit dem Lageplaner-Plugin lassen sich deutsche ALKIS-Katasterdaten für den aktuellen Kartenausschnitt kostenlos direkt in QGIS laden.
 
-Der sichtbare Ausschnitt wird als GeoPackage aus der Lageplaner API geladen und anschließend mit Farben, Linienarten, Symbolen und Beschriftungen in QGIS dargestellt.
+Der sichtbare Ausschnitt wird als GeoPackage aus der Lageplaner API geladen und anschließend nach den Darstellungsregeln der GeoInfoDok 7 mit Farben, Linienarten, Symbolen und Beschriftungen in QGIS dargestellt.
 
 Der öffentliche GeoPackage-Zugang ist auf 1 km² pro Export begrenzt. Zusätzlich gelten 30 Anfragen pro Stunde pro IP-Adresse und maximal 2 gleichzeitige Jobs pro IP-Adresse.
 
@@ -16,7 +16,7 @@ Derzeit noch nicht verfügbar:
 - Bayern
 - Sachsen-Anhalt
 
-English summary: Load ALKIS cadastral data for the current map extent into QGIS.
+English summary: Free access to German ALKIS cadastral data for the current map extent in QGIS.
 
 ## Lizenz
 
