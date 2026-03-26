@@ -6,6 +6,7 @@ import sqlite3
 import tempfile
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import ast
 from typing import Any, Callable
@@ -64,6 +65,11 @@ DEFAULT_WIDTH_M = 500.0
 DEFAULT_HEIGHT_M = 500.0
 MAX_AREA_SQ_KM = 1.0
 POLL_INTERVAL_MS = 1500
+ALLOWED_API_HOST = "api.lageplaner.de"
+ALLOWED_DOWNLOAD_HOSTS = {
+    "api.lageplaner.de",
+    "lageplaner-exports.nbg1.your-objectstorage.com",
+}
 LAYER_ORDER = ["polygons", "lines", "points", "labels"]
 LAYER_LABELS = {
     "polygons": "Flächen",
@@ -97,6 +103,18 @@ def _settings_key(name: str) -> str:
     return f"{SETTINGS_PREFIX}/{name}"
 
 
+def _validate_allowed_url(url: str, *, allow_download_host: bool = False) -> str:
+    parsed = urllib.parse.urlparse(url)
+    allowed_hosts = ALLOWED_DOWNLOAD_HOSTS if allow_download_host else {ALLOWED_API_HOST}
+
+    if parsed.scheme != "https":
+        raise ValueError("Es sind nur HTTPS-URLs erlaubt.")
+    if not parsed.hostname or parsed.hostname not in allowed_hosts:
+        raise ValueError("Die URL verweist auf einen nicht unterstützten Host.")
+
+    return url
+
+
 class HttpJsonTask(QgsTask):
     def __init__(
         self,
@@ -121,9 +139,10 @@ class HttpJsonTask(QgsTask):
 
     def run(self) -> bool:
         try:
+            safe_url = _validate_allowed_url(self._url)
             data = None if self._payload is None else json.dumps(self._payload).encode("utf-8")
             request = urllib.request.Request(
-                self._url,
+                safe_url,
                 data=data,
                 headers=self._headers,
                 method=self._method,
@@ -172,7 +191,8 @@ class HttpDownloadTask(QgsTask):
 
     def run(self) -> bool:
         try:
-            with urllib.request.urlopen(self._url, timeout=120) as response:
+            safe_url = _validate_allowed_url(self._url, allow_download_host=True)
+            with urllib.request.urlopen(safe_url, timeout=120) as response:
                 payload = response.read()
             with open(self._output_path, "wb") as handle:
                 handle.write(payload)
@@ -385,9 +405,10 @@ class LageplanerDialog(QDialog):
         url: str,
         payload: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
+        safe_url = _validate_allowed_url(url)
         data = None if payload is None else json.dumps(payload).encode("utf-8")
         request = urllib.request.Request(
-            url,
+            safe_url,
             data=data,
             headers=self._api_headers(include_json=payload is not None),
             method=method,
@@ -397,7 +418,8 @@ class LageplanerDialog(QDialog):
         return json.loads(body) if body else {}
 
     def _download_file(self, *, url: str, output_path: str) -> None:
-        with urllib.request.urlopen(url, timeout=180) as response:
+        safe_url = _validate_allowed_url(url, allow_download_host=True)
+        with urllib.request.urlopen(safe_url, timeout=180) as response:
             payload = response.read()
         with open(output_path, "wb") as handle:
             handle.write(payload)
