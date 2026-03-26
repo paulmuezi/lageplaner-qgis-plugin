@@ -11,7 +11,7 @@ import urllib.request
 import ast
 from typing import Any
 
-from qgis.PyQt.QtCore import QPointF, Qt, QTimer, QSettings
+from qgis.PyQt.QtCore import QPointF, Qt, QSettings
 from qgis.PyQt.QtGui import QColor, QFont, QIcon
 from qgis.PyQt.QtWidgets import (
     QAction,
@@ -27,11 +27,9 @@ from qgis.PyQt.QtWidgets import (
     QPushButton,
     QDoubleSpinBox,
     QVBoxLayout,
-    QWidget,
 )
 from qgis.core import (
     Qgis,
-    QgsApplication,
     QgsCategorizedSymbolRenderer,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
@@ -460,7 +458,7 @@ class LageplanerDialog(QDialog):
             self.iface.messageBar().pushMessage(
                 PLUGIN_NAME,
                 "Layer wurden geladen, aber einzelne Styles konnten nicht vollständig angewendet werden: "
-                + "; ".join(style_warnings[:3]),
+                "; ".join(style_warnings[:3]),
                 level=Qgis.Warning,
                 duration=12,
             )
@@ -1052,7 +1050,7 @@ class LageplanerDialog(QDialog):
         if signatur.startswith("rn"):
             return [signatur]
         if signatur.isdigit() and len(signatur) > 4 and len(signatur) % 4 == 0:
-            return [signatur[idx : idx + 4] for idx in range(0, len(signatur), 4)]
+            return [signatur[idx:idx + 4] for idx in range(0, len(signatur), 4)]
         return [signatur]
 
     def _catalog_labels_for_signatur(self, signatur: str, *, thema: str = "") -> list[str]:
